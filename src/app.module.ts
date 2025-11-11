@@ -1,10 +1,33 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+
+import { LoggerModule } from '@/common/logger/logger.module';
+import { HttpLoggerMiddleware } from '@/common/middlewares/http-logger.middleware';
+
+import configuration from '@/config/configuration';
+import { configValidationSchema } from '@/config/config.validation';
+
+import { PrismaModule } from '@/prisma/prisma.module';
+import { AppConfigService } from './config/app-config.service';
+import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      load: [configuration],
+      validationSchema: configValidationSchema,
+      isGlobal: true,
+    }),
+    LoggerModule,
+    PrismaModule,
+    HealthModule,
+  ],
+  controllers: [],
+  providers: [AppConfigService],
+  exports: [AppConfigService], // so you can inject it anywhere
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(HttpLoggerMiddleware).forRoutes('*');
+  }
+}
