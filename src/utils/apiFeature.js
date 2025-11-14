@@ -23,9 +23,15 @@ class APIFeature {
 
     // If using `filter[city]` style
     let filterQuery = {};
+
     if (queryStringObj.filter) {
       for (const key in queryStringObj.filter) {
-        filterQuery[`address.${key}`] = queryStringObj.filter[key];
+        // If the key is meant for nested 'address', prefix it
+        if (['city', 'country', 'street'].includes(key)) {
+          filterQuery[`address.${key}`] = queryStringObj.filter[key];
+        } else {
+          filterQuery[key] = queryStringObj.filter[key]; // top-level fields
+        }
       }
     }
 
@@ -80,6 +86,16 @@ class APIFeature {
             ],
           };
           break;
+
+        case 'RoomType':
+          searchQuery = {
+            $or: [
+              { name: { $regex: this.queryString.keyword, $options: 'i' } },
+              { amenities: { $regex: this.queryString.keyword, $options: 'i' } },
+            ],
+          };
+          break;
+
         case 'User':
           searchQuery = {
             $or: [
