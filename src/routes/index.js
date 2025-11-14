@@ -1,5 +1,6 @@
 import userRoute from './userRoute.js';
 import authRoute from './authRoute.js';
+import hotelRoute from './hotelRoute.js';
 
 // Mount Routes
 const mountRoutes = (app) => {
@@ -18,6 +19,7 @@ const mountRoutes = (app) => {
 
   app.use('/api/v1/users', userRoute);
   app.use('/api/v1/auth', authRoute);
+  app.use('/api/v1/hotels', hotelRoute);
 };
 
 export default mountRoutes;
