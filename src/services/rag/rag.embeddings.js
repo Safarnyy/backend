@@ -4,39 +4,65 @@ import dotenv from 'dotenv';
 dotenv.config({ path: './config.env' });
 
 const HF_API_KEY = process.env.HF_API_KEY;
-const EMBEDDING_MODEL = 'sentence-transformers/all-MiniLM-L6-v2';
-const LLM_MODEL = 'mistralai/Mixtral-8x7B-Instruct-v0.1';
+const EMBEDDING_MODEL = 'BAAI/bge-small-en-v1.5'; // ← More stable model
+const LLM_MODEL = 'google/flan-t5-base'; // ← Smaller, faster, more reliable
 
 export async function embedText(text) {
-  const res = await axios.post(
-    `https://api-inference.huggingface.co/pipeline/feature-extraction/${EMBEDDING_MODEL}`,
-    { inputs: text },
-    { headers: { Authorization: `Bearer ${HF_API_KEY}` } }
-  );
+  try {
+    const res = await axios.post(
+      `https://router.huggingface.co/hf-inference/models/${EMBEDDING_MODEL}`,
+      { inputs: text }, // Simple format
+      {
+        headers: {
+          Authorization: `Bearer ${HF_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 30000,
+      }
+    );
 
-  return res.data[0]; // vector
+    // Log to see actual response
+    console.log('Raw Response:', res.data);
+
+    // Handle array response
+    if (Array.isArray(res.data)) {
+      return res.data.flat();
+    }
+
+    throw new Error(`Unexpected format: ${JSON.stringify(res.data)}`);
+  } catch (error) {
+    console.error('Full Error:', error.response?.data || error.message);
+    throw new Error(`Embedding failed: ${error.response?.data?.error || error.message}`);
+  }
 }
 
 export async function generateAnswer(question, chunks, lang) {
-  const context = chunks.map((c) => c.text).join('\n\n---\n\n');
+  const context = chunks.map((c) => c.text).join('\n\n');
 
-  const prompt = `
-Answer the user's question using ONLY the provided company knowledge.
+  const prompt = `Context: ${context}\n\nQuestion: ${question}\n\nAnswer in ${lang === 'ar' ? 'Arabic' : 'English'}:`;
 
-Question:
-${question}
+  try {
+    const res = await axios.post(
+      `https://router.huggingface.co/hf-inference/models/${LLM_MODEL}`,
+      { inputs: prompt },
+      {
+        headers: {
+          Authorization: `Bearer ${HF_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 60000,
+      }
+    );
 
-Context:
-${context}
+    console.log('LLM Raw Response:', res.data);
 
-Language: ${lang === 'ar' ? 'Arabic' : 'English'}
-`;
+    if (Array.isArray(res.data) && res.data[0]?.generated_text) {
+      return res.data[0].generated_text.trim();
+    }
 
-  const res = await axios.post(
-    `https://api-inference.huggingface.co/models/${LLM_MODEL}`,
-    { inputs: prompt },
-    { headers: { Authorization: `Bearer ${HF_API_KEY}` } }
-  );
-
-  return res.data[0]?.generated_text || 'Sorry, I don’t know.';
+    return chunks[0]?.text || 'No answer found.';
+  } catch (error) {
+    console.error('LLM Error:', error.response?.data || error.message);
+    return chunks[0]?.text || 'Error generating answer.';
+  }
 }
