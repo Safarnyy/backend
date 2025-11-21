@@ -13,6 +13,7 @@ import APIError from './utils/apiError.js';
 import globalError from './middlewares/errorMiddleware.js';
 import mountRoutes from './routes/index.js';
 import './config/passport.js';
+import { dbMiddleware } from './middlewares/dbMiddleware.js';
 
 const app = express();
 
@@ -46,6 +47,8 @@ const limiter = rateLimit({
   limit: 500,
   message: 'Too many requests from this IP, please try again after 15 minutes',
 });
+
+app.use(dbMiddleware)
 
 app.use('/api', limiter);
 app.use(hpp({ whitelist: ['price', 'sold', 'quantity', 'avgRating'] }));
