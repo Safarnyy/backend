@@ -27,9 +27,6 @@ const mountRoutes = (app) => {
     });
   });
 
-  // Stripe Webhook (raw body)
-  // app.post('/webhook-checkout', express.raw({ type: 'application/json' }), webhookCheckout);
-
   app.use('/api/v1/users', userRoute);
   app.use('/api/v1/auth', authRoute);
   app.use('/api/v1/hotels', hotelRoute);
