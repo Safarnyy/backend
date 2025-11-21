@@ -25,6 +25,7 @@ const mountRoutes = (app) => {
     });
   });
 
+<<<<<<< HEAD
 
   app.get('/api/v1/debug-env', (req, res) => {
     res.json({
@@ -35,6 +36,8 @@ const mountRoutes = (app) => {
 
 
 
+=======
+>>>>>>> 9135029bfd80cbddd5dd669796cd816268b48f11
   app.use('/api/v1/users', userRoute);
   app.use('/api/v1/auth', authRoute);
   app.use('/api/v1/hotels', hotelRoute);
