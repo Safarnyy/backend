@@ -7,6 +7,10 @@ import tripRoute from './tripRoute.js';
 import packageRoute from './packageRoute.js';
 import destinationRoute from './destinationRoute.js';
 import bookingRoute from './bookingRoute.js';
+// import { webhookCheckout } from '../services/bookingService.js';
+import faqRoute from './faq.route.js';
+
+import express from 'express';
 
 // Mount Routes
 const mountRoutes = (app) => {
@@ -28,11 +32,11 @@ const mountRoutes = (app) => {
   app.use('/api/v1/hotels', hotelRoute);
   app.use('/api/v1/room-types', roomTypeRoute);
   app.use('/api/v1/transportations', transportationRoute);
-  app.use('/api/v1/destination', destinationRoute);
+  app.use('/api/v1/destinations', destinationRoute);
   app.use('/api/v1/packages', packageRoute);
   app.use('/api/v1/trips', tripRoute);
   app.use('/api/v1/bookings', bookingRoute);
-
+  app.use('/api/v1/faq', faqRoute);
 };
 
 export default mountRoutes;
