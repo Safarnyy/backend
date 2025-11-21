@@ -7,10 +7,8 @@ import tripRoute from './tripRoute.js';
 import packageRoute from './packageRoute.js';
 import destinationRoute from './destinationRoute.js';
 import bookingRoute from './bookingRoute.js';
-// import { webhookCheckout } from '../services/bookingService.js';
 import faqRoute from './faq.route.js';
 
-import express from 'express';
 
 // Mount Routes
 const mountRoutes = (app) => {
@@ -26,6 +24,16 @@ const mountRoutes = (app) => {
       },
     });
   });
+
+
+  app.get('/api/v1/debug-env', (req, res) => {
+    res.json({
+      mongo: process.env.DB_URI ? "OK" : "MISSING",
+      nodeEnv: process.env.NODE_ENV,
+    });
+  });
+
+
 
   app.use('/api/v1/users', userRoute);
   app.use('/api/v1/auth', authRoute);
