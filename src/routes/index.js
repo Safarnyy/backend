@@ -25,16 +25,6 @@ const mountRoutes = (app) => {
     });
   });
 
-
-  app.get('/api/v1/debug-env', (req, res) => {
-    res.json({
-      mongo: process.env.DB_URI ? "OK" : "MISSING",
-      nodeEnv: process.env.NODE_ENV,
-    });
-  });
-
-
-
   app.use('/api/v1/users', userRoute);
   app.use('/api/v1/auth', authRoute);
   app.use('/api/v1/hotels', hotelRoute);
