@@ -18,7 +18,7 @@ const router = express.Router();
 
 
 
-app.post(
+router.post(
   "/webhook",
   express.raw({ type: "application/json" }),
   bookingWebhookHandler
