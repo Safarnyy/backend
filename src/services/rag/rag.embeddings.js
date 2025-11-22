@@ -39,7 +39,7 @@ export async function embedText(text) {
 export async function generateAnswer(question, chunks, lang) {
   const context = chunks.map((c) => c.text).join('\n\n');
 
-  const prompt = `Context: ${context}\n\nQuestion: ${question}\n\nAnswer in ${lang === 'ar' ? 'Arabic' : 'English'}:`;
+  const prompt = `Context information is below.\n\n${context}\n\nGiven the context information and not prior knowledge, answer the question concisely: ${question}\n\nAnswer in ${lang === 'ar' ? 'Arabic' : 'English'}:`;
 
   try {
     const res = await axios.post(
@@ -57,7 +57,10 @@ export async function generateAnswer(question, chunks, lang) {
     console.log('LLM Raw Response:', res.data);
 
     if (Array.isArray(res.data) && res.data[0]?.generated_text) {
-      return res.data[0].generated_text.trim();
+      let answer = res.data[0].generated_text.trim();
+      // Remove newlines and extra spaces
+      answer = answer.replace(/\n+/g, ' ').replace(/\s+/g, ' ');
+      return answer;
     }
 
     return chunks[0]?.text || 'No answer found.';
