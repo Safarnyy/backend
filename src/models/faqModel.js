@@ -19,6 +19,7 @@ const faqSchema = new mongoose.Schema(
         if (ret && ret._id) {
           ret.id = ret._id.toString();
           delete ret._id;
+          delete ret.embeddings; // remove embeddings from every JSON response
         }
         return ret;
       },

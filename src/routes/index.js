@@ -8,7 +8,7 @@ import packageRoute from './packageRoute.js';
 import destinationRoute from './destinationRoute.js';
 import bookingRoute from './bookingRoute.js';
 import { webhookCheckout } from '../services/bookingService.js';
-import ragRoute from './rag.route.js';
+import ragRoute from './ragRoute.js';
 
 import express from 'express';
 
@@ -39,7 +39,7 @@ const mountRoutes = (app) => {
   app.use('/api/v1/packages', packageRoute);
   app.use('/api/v1/trips', tripRoute);
   app.use('/api/v1/bookings', bookingRoute);
-  app.use('/api/v1/rag', ragRoute);
+  app.use('/api/v1/fag', ragRoute);
 };
 
 export default mountRoutes;

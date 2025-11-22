@@ -6,12 +6,17 @@ import {
   updateFaqById,
   deleteFaqById,
 } from '../services/faqCrudService.js';
-// import { askFAQEndpoint } from '../services/faq.controller.js';
-import * as ragController from '../services/rag.controller.js';
+import { chatHandler } from '../services/ragService.js';
+import { getAllMiddleware } from '../middlewares/getAllMiddleware.js';
+
 const router = express.Router();
 // Public
-router.get('/', getFaqs);
-router.post('/chat', ragController.chat);
+router.get('/', getAllMiddleware(getFaqs));
+
+// router.post('/chat', ragController.chat);
+router.post('/ask', chatHandler);
+
+router.get('/:id', getFaqById);
 // Admin (protect with auth middleware in real app)
 router.post('/', createFaq);
 router.patch('/:id', updateFaqById);
