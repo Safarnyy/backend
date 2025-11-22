@@ -22,7 +22,7 @@ export const sendEmail = async ({ email, subject, message, html }) => {
     });
 
     const mailOptions = {
-      from: `"TourismEase App" <${process.env.EMAIL_USER}>`,
+      from: `"Safarnyy App" <${process.env.EMAIL_USER}>`,
       to: email,
       subject,
       text: message,
