@@ -25,7 +25,6 @@ const mountRoutes = (app) => {
     });
   });
 
-
   app.use('/api/v1/users', userRoute);
   app.use('/api/v1/auth', authRoute);
   app.use('/api/v1/hotels', hotelRoute);
@@ -35,7 +34,7 @@ const mountRoutes = (app) => {
   app.use('/api/v1/packages', packageRoute);
   app.use('/api/v1/trips', tripRoute);
   app.use('/api/v1/bookings', bookingRoute);
-  app.use('/api/v1/rag', ragRoute);
+  app.use('/api/v1/fag', ragRoute);
   app.use('/api/v1/dashboard', dashboardRoute);
 };
 
