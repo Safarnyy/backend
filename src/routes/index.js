@@ -8,7 +8,7 @@ import packageRoute from './packageRoute.js';
 import destinationRoute from './destinationRoute.js';
 import bookingRoute from './bookingRoute.js';
 import ragRoute from './ragRoute.js';
-
+import dashboardRoute from './dashboardRoute.js';
 
 // Mount Routes
 const mountRoutes = (app) => {
@@ -35,7 +35,8 @@ const mountRoutes = (app) => {
   app.use('/api/v1/packages', packageRoute);
   app.use('/api/v1/trips', tripRoute);
   app.use('/api/v1/bookings', bookingRoute);
-  app.use('/api/v1/fag', ragRoute);
+  app.use('/api/v1/faq', ragRoute);
+  app.use('/api/v1/dashboard', dashboardRoute);
 };
 
 export default mountRoutes;
