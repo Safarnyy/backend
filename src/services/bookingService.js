@@ -271,86 +271,54 @@ export const bookingWebhookHandler = asyncHandler(async (req, res) => {
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const {
-        bookingType,
-        counts,
-        paymentType,
-        dateFrom,
-        dateTo,
-        userId,
-        pickupCity
-      } = session.metadata;
+      const { bookingType, counts, paymentType, dateFrom, dateTo, userId, pickupCity } = session.metadata;
       const itemId = session.client_reference_id;
 
-      // --------------------------
-      //  Fetch user and item
-      // --------------------------
       const user = await UserModel.findById(userId);
-      if (!user) {
-        console.error(`User not found: ${userId}`);
-        return res.status(400).send('User not found');
-      }
+      if (!user) return;
 
       const itemModel = bookingType === 'Trip' ? TripModel : PackageModel;
       const item = await itemModel.findById(itemId);
-      if (!item) {
-        console.error(`${bookingType} not found: ${itemId}`);
-        return res.status(400).send(`${bookingType} not found`);
-      }
+      if (!item) return;
 
-      // --------------------------
-      //  Prevent duplicate bookings
-      // --------------------------
-      const exists = await BookingModel.findOne({ stripeSessionId: session.id });
-      if (exists) {
-        console.log(`Booking already exists for session: ${session.id}`);
-        return res.status(200).json({ received: true });
-      }
+      const countsParsed = JSON.parse(counts);
 
-      // --------------------------
-      //  Decrement seats only for Package
-      // --------------------------
+      // Calculate totalPrice
+      const totalPrice =
+        bookingType === 'Trip'
+          ? item.calculatePrice(countsParsed).total
+          : item.calculatePrice({ ...countsParsed, city: pickupCity }).total;
+
+      const paidAmount = session.amount_total / 100;
+      const remainingAmount = paymentType === 'deposit' ? paidAmount : 0;
+
+      // Decrement seats for Package
       if (bookingType === 'Package') {
-        const totalPeople = JSON.parse(counts).adults
-          + JSON.parse(counts).children
-          + JSON.parse(counts).foreigners;
-
-        if (totalPeople > item.availableSeats) {
-          console.error(`Not enough seats for item ${itemId}`);
-          return res.status(400).send('Not enough available seats');
-        }
-
+        const totalPeople = countsParsed.adults + countsParsed.children + countsParsed.foreigners;
+        if (totalPeople > item.availableSeats) return;
         item.availableSeats -= totalPeople;
         await item.save();
       }
-
-      // --------------------------
-      //  Create Booking
-      // --------------------------
-      const paidAmount = session.amount_total / 100;
-      const remainingAmount = paymentType === 'deposit' ? paidAmount : 0;
 
       const booking = await BookingModel.create({
         user: user._id,
         bookingType,
         item: item._id,
-        people: JSON.parse(counts),
+        people: countsParsed,
         paymentType,
         paymentMethod: 'stripe',
         dateFrom,
         dateTo,
+        totalPrice,  
         paidAmount,
         remainingAmount,
         paymentStatus: 'paid',
         bookingStatus: 'confirmed',
         bookingNumber: generateBookingNumber(),
         stripeSessionId: session.id,
-        pickupCity: pickupCity || null,
+        pickupCity: pickupCity || null
       });
 
-      // --------------------------
-      //  Send confirmation email
-      // --------------------------
       try {
         await sendEmail({
           email: user.email,
@@ -360,9 +328,8 @@ export const bookingWebhookHandler = asyncHandler(async (req, res) => {
       } catch (emailErr) {
         console.error('Failed to send booking email:', emailErr);
       }
-
-      console.log(`Booking created successfully for session: ${session.id}`);
     }
+
 
     res.status(200).json({ received: true });
   } catch (err) {
